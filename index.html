@@ -6,213 +6,149 @@
   <title>IPDA University by Corleone</title>
 
   <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;900&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg-1: #060606;
-      --bg-2: #0e0e10;
-      --gold: #E3B341;
-      --muted: #b0b0b0;
-      --glass: rgba(255,255,255,0.03);
-      --max-width: 980px;
+      --bg: #000;
+      --gold-cool: #d6c27c; /* dorado frío */
+      --muted: #a9a9a9;
+      --text-light: #e6e6e6;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:#fff;}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;background:var(--bg);color:var(--text-light);font-family:"Poppins",sans-serif;}
     body{
       display:flex;
-      align-items:center;
       justify-content:center;
-      padding:36px;
-      -webkit-font-smoothing:antialiased;
-      text-rendering:optimizeLegibility;
-      overflow-x:hidden;
+      align-items:center;
+      overflow:hidden;
+      text-align:center;
+      padding:40px;
     }
 
-    /* decorative animated gold waves (low-impact, behind content) */
-    .gold-waves {
-      pointer-events:none;
+    /* --- Fondo animado de ondas doradas frías --- */
+    .gold-bg {
       position:fixed;
-      left:50%;
-      top:50%;
-      transform:translate(-50%,-50%);
-      width:1600px;
-      height:700px;
+      top:0; left:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
       z-index:0;
-      mix-blend-mode: screen;
-      filter: blur(28px) saturate(1.1);
-      opacity:0.08;
+      background:radial-gradient(circle at 50% 50%, rgba(214,194,124,0.06), rgba(214,194,124,0.02) 30%, transparent 70%);
     }
-    .gold-waves .wave {
+
+    .wave {
       position:absolute;
-      left:50%;
       top:50%;
-      transform-origin:center;
+      left:50%;
+      width:160%;
+      height:160%;
       transform:translate(-50%,-50%);
-      width:1400px;
-      height:420px;
-      border-radius:50%;
-      background: radial-gradient(closest-side at 50% 40%, rgba(227,179,65,0.35), rgba(227,179,65,0.08) 30%, rgba(227,179,65,0.02) 45%, transparent 46%);
-      animation: floatX 9s linear infinite;
+      background:conic-gradient(from 0deg, rgba(214,194,124,0.15), rgba(214,194,124,0.04), transparent 120deg, transparent);
+      animation: rotate 18s linear infinite;
+      filter: blur(60px);
+      opacity:0.15;
     }
-    .gold-waves .wave.w2 {
-      width:1200px;
-      height:500px;
-      top:54%;
-      background: radial-gradient(closest-side at 50% 50%, rgba(227,179,65,0.24), rgba(227,179,65,0.06) 28%, transparent 40%);
-      animation-duration: 12s;
-      opacity:0.9;
-    }
-    .gold-waves .wave.w3 {
-      width:1000px;
-      height:380px;
-      top:46%;
-      background: radial-gradient(closest-side at 60% 40%, rgba(227,179,65,0.18), rgba(227,179,65,0.04) 30%, transparent 42%);
-      animation-duration: 7.6s;
-      opacity:0.85;
-    }
-    @keyframes floatX {
-      0%{ transform: translate(-50%,-50%) translateX(-30px) scale(1); }
-      50%{ transform: translate(-50%,-50%) translateX(30px) scale(1.02); }
-      100%{ transform: translate(-50%,-50%) translateX(-30px) scale(1); }
+    .wave:nth-child(2){animation-duration:30s;opacity:0.1;filter:blur(80px);}
+    .wave:nth-child(3){animation-duration:45s;opacity:0.07;filter:blur(100px);}
+    @keyframes rotate {
+      0%{transform:translate(-50%,-50%) rotate(0deg);}
+      100%{transform:translate(-50%,-50%) rotate(360deg);}
     }
 
-    /* subtle vertical fractal glow */
-    .vertical-glow {
-      pointer-events:none;
-      position:fixed;
-      left:50%;
-      top:50%;
-      transform:translate(-50%,-50%);
-      width:340px;
-      height:820px;
-      opacity:0.045;
-      filter: blur(18px) saturate(1.2);
-      background: radial-gradient(circle at 50% 50%, rgba(227,179,65,0.55), rgba(227,179,65,0.12) 12%, transparent 18%);
-      border-radius: 50%;
-      z-index:0;
-    }
-
-    .wrap{
+    /* --- Contenido principal --- */
+    .container{
       position:relative;
       z-index:2;
-      width:100%;
-      max-width:var(--max-width);
-      text-align:center;
-      padding:48px;
-      border-radius:14px;
+      max-width:900px;
+      padding:32px;
+      animation: fadeIn 1.2s ease-out;
+    }
+    @keyframes fadeIn {
+      from{opacity:0; transform:translateY(20px);}
+      to{opacity:1; transform:translateY(0);}
     }
 
-    /* logo */
     .logo {
-      margin: 0 auto 12px;
-      width: 152px;
-      height: auto;
-      display:block;
-      filter: drop-shadow(0 8px 28px rgba(0,0,0,0.7));
-      opacity:0.99;
+      width:150px;
+      margin-bottom:14px;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7));
+      animation: fadeLogo 1.8s ease-in-out;
+    }
+    @keyframes fadeLogo {
+      from{opacity:0; transform:scale(0.92);}
+      to{opacity:1; transform:scale(1);}
     }
 
-    /* Title with aesthetic gold gradient */
-    .brand {
-      font-family: "Poppins", sans-serif;
-      font-weight: 900;
-      font-size: clamp(28px, 5vw, 48px);
-      letter-spacing: 2px;
-      margin: 6px 0 2px;
-      line-height:1;
-      background: linear-gradient(90deg, #fff 0%, var(--gold) 48%, #fff 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      text-shadow: 0 10px 28px rgba(0,0,0,0.6);
+    h1{
+      font-size:clamp(28px,5vw,50px);
+      font-weight:900;
+      letter-spacing:2px;
+      background:linear-gradient(90deg,#fff 0%,var(--gold-cool) 50%,#fff 100%);
+      -webkit-background-clip:text;
+      color:transparent;
+      text-shadow:0 6px 20px rgba(0,0,0,0.7);
+      margin-bottom:6px;
     }
 
     .byline{
-      font-family:"Poppins",sans-serif;
+      color:var(--muted);
       font-weight:500;
+      margin-bottom:20px;
+      font-size:0.95rem;
       letter-spacing:1px;
-      color: var(--muted);
-      margin-bottom:18px;
-      font-size: 0.95rem;
     }
 
     .subtitle{
-      color: #d3d3d3;
-      max-width:760px;
-      margin: 0 auto 18px;
-      font-size: clamp(14px, 1.6vw, 18px);
+      color:var(--text-light);
+      font-weight:300;
+      font-size:clamp(14px,1.5vw,18px);
       line-height:1.6;
-    }
-
-    .launch{
-      margin: 12px 0 20px;
-      font-size: 1rem;
-      color: var(--gold);
-      font-weight:700;
-      letter-spacing:0.6px;
-    }
-
-    .actions{
-      display:flex;
-      gap:14px;
-      justify-content:center;
-      flex-wrap:wrap;
       margin-bottom:18px;
     }
 
-    .btn {
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      padding:10px 18px;
-      border:1px solid rgba(227,179,65,0.12);
-      color:var(--gold);
-      text-decoration:none;
-      font-family:"Poppins",sans-serif;
+    .launch{
+      color:var(--gold-cool);
       font-weight:600;
+      margin-bottom:24px;
+    }
+
+    .btn{
+      display:inline-block;
+      padding:10px 18px;
+      border:1px solid rgba(214,194,124,0.25);
       border-radius:8px;
-      transition: all .18s ease;
-      background: var(--glass);
-      backdrop-filter: blur(4px);
+      color:var(--gold-cool);
+      text-decoration:none;
+      font-weight:600;
+      transition:all .2s ease;
+      background:rgba(255,255,255,0.02);
+      backdrop-filter:blur(3px);
     }
     .btn:hover{
-      transform: translateY(-3px);
-      box-shadow: 0 12px 36px rgba(227,179,65,0.08);
-      background: linear-gradient(180deg, rgba(227,179,65,0.06), rgba(227,179,65,0.02));
+      background:linear-gradient(180deg,rgba(214,194,124,0.12),rgba(214,194,124,0.03));
+      box-shadow:0 0 24px rgba(214,194,124,0.08);
+      transform:translateY(-2px);
       color:#000;
     }
 
     footer{
-      color:#7d7d7d;
+      color:#666;
       font-size:0.82rem;
-      margin-top:16px;
-    }
-
-    /* small responsive tweaks */
-    @media (max-width:720px){
-      .wrap{padding:28px}
-      .logo{width:120px}
-      .brand{font-size:28px}
-      .gold-waves{display:block;width:1200px;height:520px}
-      .vertical-glow{display:none}
+      margin-top:20px;
     }
   </style>
 </head>
 <body>
-  <!-- decorative background layers -->
-  <div class="gold-waves" aria-hidden="true">
-    <div class="wave w1"></div>
-    <div class="wave w2"></div>
-    <div class="wave w3"></div>
+  <div class="gold-bg">
+    <div class="wave"></div>
+    <div class="wave"></div>
+    <div class="wave"></div>
   </div>
-  <div class="vertical-glow" aria-hidden="true"></div>
 
-  <div class="wrap" role="main" aria-labelledby="brand">
-    <!-- Image file must be uploaded as ICT_Black_Logo.jpg in your repo -->
+  <div class="container">
     <img src="./ICT_Black_Logo.jpg" alt="IPDA University emblem" class="logo">
-
-    <h1 id="brand" class="brand">IPDA UNIVERSITY</h1>
+    <h1>IPDA UNIVERSITY</h1>
     <div class="byline">by Corleone</div>
 
     <p class="subtitle">
@@ -222,9 +158,9 @@
 
     <div class="launch">🚀 Coming Soon — Launching January 2026</div>
 
-    <div class="actions">
-      <a class="btn" href="https://x.com/Corleone_Trades" target="_blank" rel="noopener">Follow @Corleone_Trades</a>
-    </div>
+    <a class="btn" href="https://x.com/Corleone_Trades" target="_blank" rel="noopener">
+      Follow @Corleone_Trades
+    </a>
 
     <footer>© 2026 IPDA University — An Educational Project by Corleone Trades</footer>
   </div>
