@@ -10,44 +10,107 @@
 
   <style>
     :root{
-      --bg1: #060606;
-      --bg2: #0e0e10;
+      --bg-1: #060606;
+      --bg-2: #0e0e10;
       --gold: #E3B341;
       --muted: #b0b0b0;
+      --glass: rgba(255,255,255,0.03);
+      --max-width: 980px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    html,body{height:100%;margin:0;font-family:"DM Sans",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:#fff;}
     body{
-      background: radial-gradient(1200px 600px at 10% 10%, rgba(227,179,65,0.03), transparent),
-                  radial-gradient(900px 400px at 90% 90%, rgba(227,179,65,0.02), transparent),
-                  linear-gradient(180deg,var(--bg1),var(--bg2));
-      color:#fff;
       display:flex;
       align-items:center;
       justify-content:center;
       padding:36px;
-      text-rendering:optimizeLegibility;
       -webkit-font-smoothing:antialiased;
-      overflow:hidden;
+      text-rendering:optimizeLegibility;
+      overflow-x:hidden;
+    }
+
+    /* decorative animated gold waves (low-impact, behind content) */
+    .gold-waves {
+      pointer-events:none;
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:1600px;
+      height:700px;
+      z-index:0;
+      mix-blend-mode: screen;
+      filter: blur(28px) saturate(1.1);
+      opacity:0.08;
+    }
+    .gold-waves .wave {
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform-origin:center;
+      transform:translate(-50%,-50%);
+      width:1400px;
+      height:420px;
+      border-radius:50%;
+      background: radial-gradient(closest-side at 50% 40%, rgba(227,179,65,0.35), rgba(227,179,65,0.08) 30%, rgba(227,179,65,0.02) 45%, transparent 46%);
+      animation: floatX 9s linear infinite;
+    }
+    .gold-waves .wave.w2 {
+      width:1200px;
+      height:500px;
+      top:54%;
+      background: radial-gradient(closest-side at 50% 50%, rgba(227,179,65,0.24), rgba(227,179,65,0.06) 28%, transparent 40%);
+      animation-duration: 12s;
+      opacity:0.9;
+    }
+    .gold-waves .wave.w3 {
+      width:1000px;
+      height:380px;
+      top:46%;
+      background: radial-gradient(closest-side at 60% 40%, rgba(227,179,65,0.18), rgba(227,179,65,0.04) 30%, transparent 42%);
+      animation-duration: 7.6s;
+      opacity:0.85;
+    }
+    @keyframes floatX {
+      0%{ transform: translate(-50%,-50%) translateX(-30px) scale(1); }
+      50%{ transform: translate(-50%,-50%) translateX(30px) scale(1.02); }
+      100%{ transform: translate(-50%,-50%) translateX(-30px) scale(1); }
+    }
+
+    /* subtle vertical fractal glow */
+    .vertical-glow {
+      pointer-events:none;
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:340px;
+      height:820px;
+      opacity:0.045;
+      filter: blur(18px) saturate(1.2);
+      background: radial-gradient(circle at 50% 50%, rgba(227,179,65,0.55), rgba(227,179,65,0.12) 12%, transparent 18%);
+      border-radius: 50%;
+      z-index:0;
     }
 
     .wrap{
+      position:relative;
+      z-index:2;
       width:100%;
-      max-width:980px;
+      max-width:var(--max-width);
       text-align:center;
       padding:48px;
       border-radius:14px;
-      backdrop-filter: blur(6px) saturate(1.05);
     }
 
     /* logo */
     .logo {
-      margin: 0 auto 18px;
-      width: 150px;
+      margin: 0 auto 12px;
+      width: 152px;
       height: auto;
       display:block;
-      filter: drop-shadow(0 6px 18px rgba(0,0,0,0.7));
-      opacity:0.98;
+      filter: drop-shadow(0 8px 28px rgba(0,0,0,0.7));
+      opacity:0.99;
     }
 
     /* Title with aesthetic gold gradient */
@@ -56,13 +119,13 @@
       font-weight: 900;
       font-size: clamp(28px, 5vw, 48px);
       letter-spacing: 2px;
-      margin: 10px 0 6px;
+      margin: 6px 0 2px;
       line-height:1;
-      background: linear-gradient(90deg, #fff 0%, var(--gold) 50%, #fff 100%);
+      background: linear-gradient(90deg, #fff 0%, var(--gold) 48%, #fff 100%);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      text-shadow: 0 6px 18px rgba(0,0,0,0.6);
+      text-shadow: 0 10px 28px rgba(0,0,0,0.6);
     }
 
     .byline{
@@ -76,25 +139,26 @@
 
     .subtitle{
       color: #d3d3d3;
-      max-width:720px;
+      max-width:760px;
       margin: 0 auto 18px;
       font-size: clamp(14px, 1.6vw, 18px);
       line-height:1.6;
     }
 
     .launch{
-      margin: 14px 0 22px;
-      font-size: 0.98rem;
+      margin: 12px 0 20px;
+      font-size: 1rem;
       color: var(--gold);
-      font-weight:600;
+      font-weight:700;
+      letter-spacing:0.6px;
     }
 
     .actions{
       display:flex;
-      gap:12px;
+      gap:14px;
       justify-content:center;
       flex-wrap:wrap;
-      margin-bottom:20px;
+      margin-bottom:18px;
     }
 
     .btn {
@@ -109,12 +173,12 @@
       font-weight:600;
       border-radius:8px;
       transition: all .18s ease;
-      background: rgba(255,255,255,0.02);
+      background: var(--glass);
       backdrop-filter: blur(4px);
     }
     .btn:hover{
       transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(227,179,65,0.08);
+      box-shadow: 0 12px 36px rgba(227,179,65,0.08);
       background: linear-gradient(180deg, rgba(227,179,65,0.06), rgba(227,179,65,0.02));
       color:#000;
     }
@@ -122,32 +186,27 @@
     footer{
       color:#7d7d7d;
       font-size:0.82rem;
-      margin-top:14px;
+      margin-top:16px;
     }
 
-    /* subtle animated vertical fractal glow line behind center */
-    .bg-decor{
-      pointer-events:none;
-      position:fixed;
-      left:50%;
-      top:50%;
-      transform:translate(-50%,-50%);
-      width:640px;
-      height:640px;
-      opacity:0.06;
-      background-image: radial-gradient(circle at center, rgba(227,179,65,0.35), transparent 25%);
-      filter: blur(40px) saturate(1.1);
-      mix-blend-mode: screen;
-    }
-
+    /* small responsive tweaks */
     @media (max-width:720px){
       .wrap{padding:28px}
       .logo{width:120px}
+      .brand{font-size:28px}
+      .gold-waves{display:block;width:1200px;height:520px}
+      .vertical-glow{display:none}
     }
   </style>
 </head>
 <body>
-  <div class="bg-decor" aria-hidden="true"></div>
+  <!-- decorative background layers -->
+  <div class="gold-waves" aria-hidden="true">
+    <div class="wave w1"></div>
+    <div class="wave w2"></div>
+    <div class="wave w3"></div>
+  </div>
+  <div class="vertical-glow" aria-hidden="true"></div>
 
   <div class="wrap" role="main" aria-labelledby="brand">
     <!-- Image file must be uploaded as ICT_Black_Logo.jpg in your repo -->
@@ -165,7 +224,6 @@
 
     <div class="actions">
       <a class="btn" href="https://x.com/Corleone_Trades" target="_blank" rel="noopener">Follow @Corleone_Trades</a>
-      <a class="btn" href="mailto:contact@ipdauniversity.com">Contact</a>
     </div>
 
     <footer>© 2026 IPDA University — An Educational Project by Corleone Trades</footer>
