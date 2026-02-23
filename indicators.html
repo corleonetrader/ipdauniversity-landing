@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TradingView Indicators — IPDA University</title>
+  <meta name="description" content="Proprietary IPDA TradingView indicators by Corleone. NWOG & NDOG, ORG & RTH Liquidity, 1st Presentation Arrays, IPDA Weekly Profile, Liquidity Matrix." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Bebas+Neue&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #080808;
+      --deep:    #0f0f0f;
+      --surface: #161616;
+      --border:  #2a2a2a;
+      --gold:    #c9a55a;
+      --gold-dim:#8a6d35;
+      --cream:   #ede6d8;
+      --muted:   #7a7068;
+      --white:   #f5f0e8;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ─── GRAIN ─── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.035; pointer-events: none; z-index: 9999;
+    }
+
+    /* ─── VIGNETTE ─── */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);
+      pointer-events: none; z-index: 9998;
+    }
+
+    /* ─── BG SCENE ─── */
+    .bg-scene {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden;
+    }
+    .bg-scene::before {
+      content: '';
+      position: absolute;
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(201,165,90,0.04) 0%, transparent 70%);
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      animation: breathe 10s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+      50%       { transform: translateX(-50%) scale(1.2); opacity: 1; }
+    }
+
+    /* ─── LAYOUT ─── */
+    .wrapper {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding-top: 68px;
+    }
+
+    /* ─── NAVBAR ─── */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 48px; height: 68px;
+      border-bottom: 1px solid transparent;
+      transition: background 0.4s ease, border-color 0.4s ease, backdrop-filter 0.4s ease;
+      opacity: 0;
+      animation: fadeDown 0.8s ease forwards 0.2s;
+    }
+    .navbar.scrolled {
+      background: rgba(8,8,8,0.88);
+      border-color: var(--border);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.15rem; letter-spacing: 0.22em;
+      color: var(--gold); text-decoration: none; flex-shrink: 0;
+    }
+    .nav-logo span { color: var(--cream); opacity: 0.7; }
+    .nav-links {
+      display: flex; align-items: center; gap: 36px; list-style: none;
+    }
+    .nav-links a {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem; font-weight: 400; letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: rgba(237,230,216,0.75);
+      text-decoration: none; position: relative;
+      transition: color 0.25s ease;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1px; background: var(--gold);
+      transition: width 0.3s ease;
+    }
+    .nav-links a:hover { color: var(--cream); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-links a.active { color: var(--gold); }
+    .nav-links a.active::after { width: 100%; }
+    .nav-hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; padding: 4px; background: none; border: none;
+    }
+    .nav-hamburger span {
+      display: block; width: 22px; height: 1px;
+      background: var(--cream); transition: all 0.3s ease;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    .nav-mobile {
+      display: none; position: fixed; top: 68px; left: 0; right: 0;
+      background: rgba(8,8,8,0.97); backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      padding: 32px 48px; z-index: 999;
+      flex-direction: column; gap: 24px;
+    }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile a {
+      font-family: 'DM Mono', monospace; font-size: 0.75rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted); text-decoration: none; transition: color 0.2s;
+    }
+    .nav-mobile a:hover, .nav-mobile a.active { color: var(--gold); }
+    @media (max-width: 768px) {
+      .navbar { padding: 0 24px; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+      .nav-mobile { padding: 28px 24px; }
+    }
+
+    /* ─── PAGE HERO ─── */
+    .page-hero {
+      width: 100%; max-width: 900px;
+      padding: 72px 24px 56px;
+      text-align: center;
+      opacity: 0;
+      animation: fadeUp 0.9s ease forwards 0.4s;
+    }
+    .page-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.35em;
+      color: var(--gold); text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex; align-items: center; justify-content: center; gap: 16px;
+    }
+    .page-eyebrow::before, .page-eyebrow::after {
+      content: ''; display: block; width: 32px; height: 1px; background: var(--gold-dim);
+    }
+    .page-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 9vw, 6rem);
+      line-height: 0.92; letter-spacing: 0.04em;
+      color: var(--white); margin-bottom: 20px;
+    }
+    .page-title span { color: var(--gold); display: block; }
+    .page-desc {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 300; line-height: 1.75;
+      color: var(--white); opacity: 0.75;
+      max-width: 560px; margin: 0 auto;
+    }
+
+    /* ─── PLATFORM BADGE ─── */
+    .platform-badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      margin-top: 28px;
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      background: var(--deep);
+    }
+    .platform-badge img {
+      width: 18px; height: 18px; object-fit: contain;
+    }
+    .platform-badge span {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.2em;
+      color: var(--muted); text-transform: uppercase;
+    }
+    .platform-badge strong {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem; letter-spacing: 0.15em;
+      color: var(--cream); font-weight: 400;
+    }
+
+    /* ─── DIVIDER ─── */
+    .section-divider {
+      width: 1px; height: 48px;
+      background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+      margin: 0 auto;
+    }
+
+    /* ─── CONTENT ─── */
+    .content {
+      width: 100%; max-width: 900px;
+      padding: 0 24px 80px;
+    }
+
+    /* ─── SECTION HEADER ─── */
+    .section-header {
+      display: flex; align-items: center; gap: 20px;
+      padding: 52px 0 36px;
+      border-top: 1px solid var(--border);
+    }
+    .section-header.first { border-top: none; padding-top: 40px; }
+    .section-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.82rem; letter-spacing: 0.4em;
+      color: var(--gold); text-transform: uppercase; white-space: nowrap;
+    }
+    .section-line { flex: 1; height: 1px; background: var(--border); }
+    .section-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem; letter-spacing: 0.2em;
+      color: var(--muted); text-transform: uppercase; white-space: nowrap;
+    }
+
+    /* ─── INDICATOR CARDS ─── */
+    .indicators-list {
+      display: flex; flex-direction: column; gap: 1px;
+      background: var(--border);
+      margin-bottom: 12px;
+    }
+
+    .indicator-card {
+      background: var(--deep);
+      padding: 32px 36px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      transition: background 0.25s ease;
+      position: relative;
+    }
+    .indicator-card:hover { background: var(--surface); }
+
+    /* Number accent */
+    .ind-number {
+      position: absolute;
+      bottom: 20px; right: 32px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 5rem; line-height: 1;
+      color: rgba(201,165,90,0.05);
+      letter-spacing: 0.05em;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .ind-left { display: flex; flex-direction: column; gap: 16px; }
+
+    .ind-header { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+
+    .ind-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem; letter-spacing: 0.12em;
+      color: var(--white); line-height: 1;
+    }
+
+    .ind-badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+    .ind-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.5rem; letter-spacing: 0.15em;
+      text-transform: uppercase; padding: 3px 9px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .ind-badge.category {
+      border-color: rgba(201,165,90,0.3);
+      color: var(--gold);
+    }
+
+    .ind-desc {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem; font-weight: 300; line-height: 1.7;
+      color: var(--white); opacity: 0.75;
+      max-width: 580px;
+    }
+
+    .ind-features {
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .ind-feature {
+      display: flex; align-items: baseline; gap: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem; font-weight: 300;
+      color: var(--white); opacity: 0.65;
+    }
+    .ind-feature::before {
+      content: '—';
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--gold-dim);
+      flex-shrink: 0;
+    }
+
+    .ind-footer {
+      display: flex; align-items: center; gap: 16px;
+      padding-top: 8px;
+      flex-wrap: wrap;
+    }
+    .ind-tf-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.55rem; letter-spacing: 0.18em;
+      color: var(--muted); text-transform: uppercase;
+    }
+    .ind-tf-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+    .ind-tf-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.52rem; letter-spacing: 0.1em;
+      color: var(--cream); opacity: 0.5;
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+    }
+
+    .ind-right {
+      display: flex; flex-direction: column;
+      align-items: flex-end; justify-content: flex-start;
+      gap: 12px; min-width: 120px;
+      padding-top: 4px;
+    }
+    .ind-price {
+      text-align: right;
+    }
+    .ind-price-amount {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem; color: var(--gold); line-height: 1;
+    }
+    .ind-price-period {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.52rem; letter-spacing: 0.15em;
+      color: var(--muted); display: block; margin-top: 2px;
+    }
+    .ind-coming {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.55rem; letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+    }
+
+    @media (max-width: 640px) {
+      .indicator-card { grid-template-columns: 1fr; padding: 24px 20px; }
+      .ind-right { align-items: flex-start; }
+      .ind-number { display: none; }
+    }
+
+    /* ─── PRICING SECTION ─── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 640px) { .pricing-grid { grid-template-columns: 1fr; } }
+
+    .pricing-card {
+      background: var(--deep);
+      border: 1px solid var(--border);
+      padding: 36px 32px;
+      display: flex; flex-direction: column; gap: 20px;
+      position: relative; overflow: hidden;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .pricing-card:hover { background: var(--surface); border-color: rgba(201,165,90,0.2); }
+    .pricing-card.featured {
+      border-color: rgba(201,165,90,0.35);
+    }
+    .pricing-card.featured:hover { border-color: rgba(201,165,90,0.55); }
+
+    .pricing-card-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem; letter-spacing: 0.25em;
+      color: var(--muted); text-transform: uppercase;
+    }
+    .pricing-card.featured .pricing-card-label { color: var(--gold); }
+
+    .pricing-card-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem; letter-spacing: 0.1em;
+      color: var(--white); line-height: 1;
+    }
+
+    .pricing-amount-wrap {
+      display: flex; align-items: baseline; gap: 6px;
+    }
+    .pricing-amount {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem; color: var(--gold); line-height: 1;
+    }
+    .pricing-period {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.15em;
+      color: var(--muted);
+    }
+    .pricing-tbd {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem; color: var(--muted); line-height: 1;
+      letter-spacing: 0.1em;
+    }
+
+    .pricing-divider { height: 1px; background: var(--border); }
+
+    .pricing-features { display: flex; flex-direction: column; gap: 10px; }
+    .pricing-feature {
+      display: flex; align-items: baseline; gap: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; font-weight: 300;
+      color: var(--white); opacity: 0.7;
+    }
+    .pricing-feature-dot {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--gold-dim); flex-shrink: 0;
+      position: relative; top: -2px;
+    }
+    .pricing-card.featured .pricing-feature-dot { background: var(--gold); }
+
+    .pricing-note {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.55rem; letter-spacing: 0.12em;
+      color: var(--muted); opacity: 0.7; line-height: 1.6;
+    }
+
+    .pricing-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+      border: 1px solid var(--border);
+      padding: 12px 20px; color: var(--muted);
+      text-decoration: none; cursor: default;
+      margin-top: auto;
+    }
+    .pricing-cta.soon { opacity: 0.5; }
+
+    /* Savings badge */
+    .savings-badge {
+      position: absolute; top: 16px; right: 16px;
+      background: rgba(201,165,90,0.12);
+      border: 1px solid rgba(201,165,90,0.3);
+      padding: 4px 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.52rem; letter-spacing: 0.15em;
+      color: var(--gold); text-transform: uppercase;
+    }
+
+    /* ─── UPDATES STRIP ─── */
+    .updates-strip {
+      border: 1px solid var(--border);
+      background: var(--deep);
+      padding: 20px 28px;
+      display: flex; align-items: center; gap: 20px;
+      margin-bottom: 64px;
+    }
+    .updates-icon {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.75rem; letter-spacing: 0.3em;
+      color: var(--gold); white-space: nowrap;
+    }
+    .updates-divider { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
+    .updates-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; font-weight: 300; line-height: 1.6;
+      color: var(--white); opacity: 0.65;
+    }
+    @media (max-width: 640px) {
+      .updates-strip { flex-direction: column; align-items: flex-start; }
+      .updates-divider { display: none; }
+    }
+
+    /* ─── FOOTER ─── */
+    .footer {
+      width: 100%;
+      border-top: 1px solid var(--border);
+      padding: 24px 48px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: auto;
+      opacity: 0;
+      animation: fadeIn 1s ease forwards 1.6s;
+    }
+    .footer-left {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem; letter-spacing: 0.2em;
+      color: var(--muted); text-transform: uppercase;
+    }
+    .footer-right {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.85rem; font-style: italic; color: var(--muted);
+    }
+    .footer-right span { color: var(--gold); }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .fade-in-up {
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards;
+    }
+
+    /* ─── CURSOR ─── */
+    .cursor-dot {
+      width: 5px; height: 5px; background: var(--gold); border-radius: 50%;
+      position: fixed; pointer-events: none; z-index: 10000;
+      transform: translate(-50%, -50%);
+    }
+    .cursor-ring {
+      width: 28px; height: 28px;
+      border: 1px solid rgba(201,165,90,0.35); border-radius: 50%;
+      position: fixed; pointer-events: none; z-index: 10000;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor-dot" id="dot"></div>
+  <div class="cursor-ring" id="ring"></div>
+  <div class="bg-scene"></div>
+
+  <div class="wrapper">
+
+    <!-- NAVBAR -->
+    <nav class="navbar" id="navbar">
+      <a href="/index.html" class="nav-logo">IPDA <span>University</span></a>
+      <ul class="nav-links">
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/propfirms.html">Prop Firms</a></li>
+        <li><a href="/indicators.html" class="active">Indicators</a></li>
+        <li><a href="/partners.html">Partners</a></li>
+      </ul>
+      <button class="nav-hamburger" id="hamburger" aria-label="Menu" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+
+    <!-- MOBILE MENU -->
+    <div class="nav-mobile" id="mobile-menu">
+      <a href="/about.html" onclick="toggleMenu()">About</a>
+      <a href="/propfirms.html" onclick="toggleMenu()">Prop Firms</a>
+      <a href="/indicators.html" class="active" onclick="toggleMenu()">Indicators</a>
+      <a href="/partners.html" onclick="toggleMenu()">Partners</a>
+    </div>
+
+    <!-- PAGE HERO -->
+    <div class="page-hero">
+      <div class="page-eyebrow">TradingView · Pine Script</div>
+      <h1 class="page-title">
+        IPDA
+        <span>Indicators</span>
+      </h1>
+      <p class="page-desc">
+        Five proprietary tools built on IPDA methodology. Designed for futures traders who demand precision — compatible with every TradingView asset.
+      </p>
+      <div class="platform-badge">
+        <img src="https://www.google.com/s2/favicons?domain=tradingview.com&sz=64" alt="TradingView" />
+        <span>Available on</span>
+        <strong>TradingView</strong>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ═══ INDICATORS ═══ -->
+      <div class="section-header first fade-in-up" style="animation-delay:0.5s">
+        <span class="section-label">The Suite</span>
+        <div class="section-line"></div>
+        <span class="section-tag">5 Indicators</span>
+      </div>
+
+      <div class="indicators-list fade-in-up" style="animation-delay:0.6s">
+
+        <!-- 01 — NWOG & NDOG -->
+        <div class="indicator-card">
+          <div class="ind-number">01</div>
+          <div class="ind-left">
+            <div class="ind-header">
+              <div class="ind-name">NWOG &amp; NDOG</div>
+              <div class="ind-badges">
+                <span class="ind-badge category">Opening Gaps</span>
+                <span class="ind-badge">Multi-Asset</span>
+              </div>
+            </div>
+            <p class="ind-desc">
+              Automatically plots a configurable number of New Week Opening Gaps and New Day Opening Gaps on your chart. Each gap is clearly labeled and color-coded — no manual drawing required.
+            </p>
+            <div class="ind-features">
+              <div class="ind-feature">Configurable lookback — choose how many NWOGs and NDOGs to display</div>
+              <div class="ind-feature">Individual color and style control per gap type</div>
+              <div class="ind-feature">Works across all assets and timeframes</div>
+            </div>
+            <div class="ind-footer">
+              <span class="ind-tf-label">Timeframes</span>
+              <div class="ind-tf-tags">
+                <span class="ind-tf-tag">All TF</span>
+              </div>
+            </div>
+          </div>
+          <div class="ind-right">
+            <div class="ind-coming">Coming Soon</div>
+          </div>
+        </div>
+
+        <!-- 02 — ORG & RTH Liquidity -->
+        <div class="indicator-card">
+          <div class="ind-number">02</div>
+          <div class="ind-left">
+            <div class="ind-header">
+              <div class="ind-name">ORG &amp; RTH Liquidity</div>
+              <div class="ind-badges">
+                <span class="ind-badge category">Session Levels</span>
+                <span class="ind-badge">Intraday</span>
+              </div>
+            </div>
+            <p class="ind-desc">
+              Marks the Opening Range Gap — the price differential between the 16:14 close and the 9:30 RTH open — alongside key RTH session liquidity levels.
+            </p>
+            <div class="ind-features">
+              <div class="ind-feature">Precise 16:14 close → 9:30 open gap visualization</div>
+              <div class="ind-feature">RTH session high, low and key liquidity zones</div>
+              <div class="ind-feature">Auto-updates each session</div>
+            </div>
+            <div class="ind-footer">
+              <span class="ind-tf-label">Timeframes</span>
+              <div class="ind-tf-tags">
+                <span class="ind-tf-tag">1m</span>
+                <span class="ind-tf-tag">5m</span>
+                <span class="ind-tf-tag">15m</span>
+                <span class="ind-tf-tag">30m</span>
+              </div>
+            </div>
+          </div>
+          <div class="ind-right">
+            <div class="ind-coming">Coming Soon</div>
+          </div>
+        </div>
+
+        <!-- 03 — 1st Presentation Arrays -->
+        <div class="indicator-card">
+          <div class="ind-number">03</div>
+          <div class="ind-left">
+            <div class="ind-header">
+              <div class="ind-name">1st Presentation Arrays</div>
+              <div class="ind-badges">
+                <span class="ind-badge category">FVG · Arrays</span>
+                <span class="ind-badge">1m Chart</span>
+              </div>
+            </div>
+            <p class="ind-desc">
+              Identifies and marks the first Fair Value Gap formed during each trading session — AM, PM, London and Asia — directly on the 1-minute chart.
+            </p>
+            <div class="ind-features">
+              <div class="ind-feature">First FVG per session: AM · PM · London · Asia</div>
+              <div class="ind-feature">Session-specific color coding for instant identification</div>
+              <div class="ind-feature">Built exclusively for 1-minute precision entries</div>
+            </div>
+            <div class="ind-footer">
+              <span class="ind-tf-label">Timeframes</span>
+              <div class="ind-tf-tags">
+                <span class="ind-tf-tag">1m</span>
+              </div>
+            </div>
+          </div>
+          <div class="ind-right">
+            <div class="ind-coming">Coming Soon</div>
+          </div>
+        </div>
+
+        <!-- 04 — IPDA Weekly Profile -->
+        <div class="indicator-card">
+          <div class="ind-number">04</div>
+          <div class="ind-left">
+            <div class="ind-header">
+              <div class="ind-name">IPDA Weekly Profile</div>
+              <div class="ind-badges">
+                <span class="ind-badge category">Profile · Ranges</span>
+                <span class="ind-badge">60m ↓</span>
+              </div>
+            </div>
+            <p class="ind-desc">
+              A complete intraday context map built for 60-minute charts and below. Combines the weekly and daily range structure with premium/discount zones, key opening prices and high-probability liquidity in a single overlay.
+            </p>
+            <div class="ind-features">
+              <div class="ind-feature">Weekly and daily range with automatic premium / discount zones</div>
+              <div class="ind-feature">Key opening prices: weekly open, daily open, Monday open</div>
+              <div class="ind-feature">High-probability intraday liquidity levels</div>
+              <div class="ind-feature">Equilibrium line for directional bias at a glance</div>
+            </div>
+            <div class="ind-footer">
+              <span class="ind-tf-label">Timeframes</span>
+              <div class="ind-tf-tags">
+                <span class="ind-tf-tag">60m</span>
+                <span class="ind-tf-tag">30m</span>
+                <span class="ind-tf-tag">15m</span>
+                <span class="ind-tf-tag">5m</span>
+                <span class="ind-tf-tag">1m</span>
+              </div>
+            </div>
+          </div>
+          <div class="ind-right">
+            <div class="ind-coming">Coming Soon</div>
+          </div>
+        </div>
+
+        <!-- 05 — Liquidity Matrix -->
+        <div class="indicator-card">
+          <div class="ind-number">05</div>
+          <div class="ind-left">
+            <div class="ind-header">
+              <div class="ind-name">Liquidity Matrix</div>
+              <div class="ind-badges">
+                <span class="ind-badge category">Liquidity</span>
+                <span class="ind-badge">Multi-Asset</span>
+              </div>
+            </div>
+            <p class="ind-desc">
+              Maps high-probability liquidity pools across the chart — the levels where smart money is most likely to reach before reversing. Built on IPDA liquidity principles.
+            </p>
+            <div class="ind-features">
+              <div class="ind-feature">High-probability buy-side and sell-side liquidity identification</div>
+              <div class="ind-feature">Relative equal highs / lows and stop-cluster zones</div>
+              <div class="ind-feature">Works across all assets and timeframes</div>
+            </div>
+            <div class="ind-footer">
+              <span class="ind-tf-label">Timeframes</span>
+              <div class="ind-tf-tags">
+                <span class="ind-tf-tag">All TF</span>
+              </div>
+            </div>
+          </div>
+          <div class="ind-right">
+            <div class="ind-coming">Coming Soon</div>
+          </div>
+        </div>
+
+      </div><!-- /indicators-list -->
+
+
+      <!-- ═══ PRICING ═══ -->
+      <div class="section-header fade-in-up" style="animation-delay:0.7s">
+        <span class="section-label">Pricing</span>
+        <div class="section-line"></div>
+        <span class="section-tag">Monthly Subscription</span>
+      </div>
+
+      <div class="pricing-grid fade-in-up" style="animation-delay:0.8s">
+
+        <!-- INDIVIDUAL -->
+        <div class="pricing-card">
+          <div class="pricing-card-label">Per Indicator</div>
+          <div class="pricing-card-name">Individual Access</div>
+          <div class="pricing-amount-wrap">
+            <span class="pricing-tbd">TBD</span>
+            <span class="pricing-period">/ month</span>
+          </div>
+          <div class="pricing-divider"></div>
+          <div class="pricing-features">
+            <div class="pricing-feature">
+              <div class="pricing-feature-dot"></div>
+              Access to one indicator of your choice
+            </div>
+            <div class="pricing-feature">
+              <div class="pricing-feature-dot"></div>
+              All future updates &amp; improvements included
+            </div>
+            <div class="pricing-feature">
+              <div class="pricing-feature-dot"></div>
+              Invite via TradingView username
+            </div>
+            <div class="pricing-feature">
+              <div class="pricing-feature-dot"></div>
+              Cancel anytime
+            </div>
+          </div>
+          <div class="pricing-note">Price per indicator to be announced at launch.</div>
+          <span class="pricing-cta soon">
+            Coming Soon
+          </span>
+        </div>
+
+        <!-- FULL PACK -->
+        <div class="pricing-card featured">
+          <div class="savings-badge">Best Value</div>
+          <div class="pricing-card-label">Full Suite</div>
+          <div class="pricing-card-name">Complete Pack</div>
+          <div class="pricing-amount-wrap">
+            <span class="pricing-tbd">TBD</span>
+            <span class="pricing-period">/ month</span>
+          </div>
+          <div class="pricing-divider"></div>
+          <div class="pricing-features">
+            <div class="pricing-feature">
+              <div class="pricing-feature-dot"></div>
+              All 5 indicators — current &amp; future releases
+            </div>
+            <div class="pricing-feature">
+              <div class="pricing-feature-dot"></div>
+              All future updates &amp; improvements included
+            </div>
+            <div class="pricing-feature">
+              <div class="pricing-feature-dot"></div>
+              Invite via TradingView username
+            </div>
+            <div class="pricing-feature">
+              <div class="pricing-feature-dot"></div>
+              Priority access to new indicators
+            </div>
+            <div class="pricing-feature">
+              <div class="pricing-feature-dot"></div>
+              Cancel anytime
+            </div>
+          </div>
+          <div class="pricing-note">Bundle price — significant discount vs. individual. Announced at launch.</div>
+          <span class="pricing-cta soon">
+            Coming Soon
+          </span>
+        </div>
+
+      </div>
+
+      <!-- UPDATES STRIP -->
+      <div class="updates-strip fade-in-up" style="animation-delay:0.9s">
+        <span class="updates-icon">✦ &nbsp;All Plans Include</span>
+        <div class="updates-divider"></div>
+        <span class="updates-text">Every subscription includes all future updates and improvements at no extra cost. As the indicators evolve, you evolve with them.</span>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <span class="footer-left">© 2025 IPDA University · All rights reserved</span>
+      <span class="footer-right">Built by <span>@Corleone_Trades</span> · Not financial advice</span>
+    </footer>
+
+  </div><!-- /wrapper -->
+
+  <script>
+    // ─── NAVBAR SCROLL ───
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // ─── MOBILE MENU ───
+    function toggleMenu() {
+      document.getElementById('mobile-menu').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        document.getElementById('mobile-menu').classList.remove('open');
+        document.getElementById('hamburger').classList.remove('open');
+      }
+    });
+
+    // ─── CURSOR ───
+    const dot = document.getElementById('dot');
+    const ring = document.getElementById('ring');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.left = mx + 'px'; dot.style.top = my + 'px';
+    });
+    function animateRing() {
+      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(animateRing);
+    }
+    animateRing();
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        ring.style.width = '44px'; ring.style.height = '44px';
+        ring.style.borderColor = 'rgba(201,165,90,0.55)';
+      });
+      el.addEventListener('mouseleave', () => {
+        ring.style.width = '28px'; ring.style.height = '28px';
+        ring.style.borderColor = 'rgba(201,165,90,0.3)';
+      });
+    });
+
+    // ─── SCROLL ANIMATIONS ───
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationPlayState = 'running';
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.fade-in-up').forEach(el => {
+      el.style.animationPlayState = 'paused';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
