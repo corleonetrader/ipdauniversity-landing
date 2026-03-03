@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ICT Library — IPDA University</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Bebas+Neue&family=DM+Mono:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #c9a55a; --gold-dim: #8a6d35;
+      --red: #e8192c; --red-dim: #8a0f1a;
+      --cream: #ede6d8; --muted: #7a7068; --white: #f5f0e8; --border: #1a1a1a;
+      --surface: #0d0d0d;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: #000; color: var(--cream); font-family: 'Cormorant Garamond', Georgia, serif; min-height: 100vh; overflow-x: hidden; cursor: none; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(232,25,44,0.018) 40px, rgba(232,25,44,0.018) 41px);
+    }
+    .bg-scene { display: none; }
+    .wrapper { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+
+    /* ══ NAVBAR ══ */
+    .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 52px; height: 88px; transition: background 0.6s, backdrop-filter 0.6s; opacity: 0; animation: fadeDown 0.8s ease forwards 0.2s; }
+    .navbar.scrolled { background: rgba(0,0,0,0.92); border-bottom: 1px solid #1a1a1a; backdrop-filter: blur(32px); }
+    .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 0.3em; color: var(--gold); text-decoration: none; }
+    .nav-logo span { color: var(--cream); opacity: 0.45; }
+    .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; justify-content: center; }
+    .nav-links a { font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(237,230,216,0.75); text-decoration: none; position: relative; transition: color 0.25s; }
+    .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--red); transition: width 0.3s; }
+    .nav-links a:hover { color: var(--cream); }
+    .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+    .nav-links a.active { color: var(--red); }
+    .nav-right { display: flex; align-items: center; justify-content: flex-end; }
+    .nav-cta { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); background: transparent; border: 1px solid rgba(201,165,90,0.45); border-radius: 100px; text-decoration: none; padding: 10px 26px; box-shadow: 0 0 18px rgba(201,165,90,0.12), inset 0 0 14px rgba(201,165,90,0.05); transition: all 0.35s; white-space: nowrap; }
+    .nav-cta:hover { background: rgba(201,165,90,0.1); border-color: rgba(201,165,90,0.75); color: var(--cream); }
+    .nav-hamburger { display: none; flex-direction: column; gap: 6px; cursor: pointer; padding: 4px; background: none; border: none; }
+    .nav-hamburger span { display: block; width: 24px; height: 1px; background: rgba(237,230,216,0.45); transition: all 0.3s; }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav-mobile { display: none; position: fixed; top: 88px; left: 0; right: 0; background: #000; border-bottom: 1px solid #1a1a1a; padding: 44px 72px; z-index: 999; flex-direction: column; gap: 32px; }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile a { font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-mobile a:hover, .nav-mobile a.active { color: var(--red); }
+    @media (max-width: 768px) { .navbar { padding: 0 28px; height: 72px; grid-template-columns: 1fr auto; } .nav-links, .nav-right { display: none; } .nav-hamburger { display: flex; } .nav-mobile { padding: 36px 28px; top: 72px; } }
+
+    /* ══ TICKER ══ */
+    .ticker-wrap { width: 100%; border-bottom: 1px solid #1a1a1a; overflow: hidden; padding: 12px 0; background: #000; margin-top: 88px; opacity: 0; animation: fadeIn 1s ease forwards 0.4s; }
+    .ticker { display: flex; white-space: nowrap; animation: ticker-scroll 30s linear infinite; }
+    .ticker span { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.22em; color: var(--muted); padding: 0 32px; text-transform: uppercase; }
+    .ticker span.hl { color: var(--gold); }
+    @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+    /* ══ PAGE HERO ══ */
+    .page-hero { width: 100%; max-width: 900px; padding: 64px 40px 40px; text-align: center; opacity: 0; animation: fadeUp 0.9s ease forwards 0.4s; }
+    .page-eyebrow { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.35em; color: var(--red); text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 16px; }
+    .page-eyebrow::before, .page-eyebrow::after { content: ''; display: block; width: 32px; height: 1px; background: var(--red-dim); }
+    .page-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 9vw, 6rem); line-height: 0.92; letter-spacing: 0.04em; color: var(--white); }
+    .page-title span { color: var(--red); display: block; }
+    .page-desc { font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 300; line-height: 1.75; color: rgba(245,240,232,0.6); max-width: 580px; margin: 20px auto 0; }
+
+    /* ══ ROADMAP ══ */
+    .roadmap-wrap { width: 100%; max-width: 1100px; padding: 56px 40px 64px; opacity: 0; animation: fadeUp 1s ease forwards 0.7s; }
+    .roadmap { display: flex; align-items: center; justify-content: center; gap: 0; position: relative; }
+    .roadmap-step { display: flex; flex-direction: column; align-items: center; gap: 14px; flex: 1; cursor: pointer; text-decoration: none; transition: transform 0.25s; }
+    .roadmap-step:hover { transform: translateY(-4px); }
+    .roadmap-node {
+      width: 56px; height: 56px; border-radius: 50%;
+      border: 1px solid rgba(232,25,44,0.3);
+      background: #000;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+      color: var(--red); letter-spacing: 0.05em;
+      position: relative; z-index: 2;
+      transition: all 0.3s;
+      box-shadow: 0 0 20px rgba(232,25,44,0.08);
+    }
+    .roadmap-step:hover .roadmap-node {
+      border-color: var(--red);
+      background: rgba(232,25,44,0.08);
+      box-shadow: 0 0 32px rgba(232,25,44,0.25);
+    }
+    .roadmap-label { font-family: 'DM Mono', monospace; font-size: 0.56rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(232,25,44,0.6); text-align: center; line-height: 1.5; max-width: 80px; transition: color 0.25s; }
+    .roadmap-step:hover .roadmap-label { color: var(--red); }
+    .roadmap-connector { flex: 1; height: 1px; background: linear-gradient(to right, rgba(232,25,44,0.15), rgba(232,25,44,0.35), rgba(232,25,44,0.15)); position: relative; top: -28px; max-width: 80px; }
+    @media (max-width: 768px) {
+      .roadmap { flex-direction: column; gap: 0; }
+      .roadmap-connector { width: 1px; height: 36px; background: linear-gradient(to bottom, rgba(201,165,90,0.2), rgba(201,165,90,0.4), rgba(201,165,90,0.2)); top: 0; max-width: none; }
+      .roadmap-step { flex-direction: row; gap: 20px; width: 100%; max-width: 300px; }
+      .roadmap-label { text-align: left; max-width: none; }
+    }
+
+    /* ══ CONTENT SECTIONS ══ */
+    .library-body { width: 100%; max-width: 1200px; padding: 0 40px 100px; }
+
+    .section-block { padding: 64px 0; border-top: 1px solid #111; }
+    .section-block:first-child { border-top: none; }
+
+    .section-head { display: flex; align-items: flex-start; gap: 32px; margin-bottom: 40px; }
+    .section-number { font-family: 'Bebas Neue', sans-serif; font-size: 4rem; line-height: 1; color: rgba(232,25,44,0.1); letter-spacing: 0.05em; flex-shrink: 0; }
+    .section-info { flex: 1; }
+    .section-tag { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--red); margin-bottom: 10px; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.8rem, 4vw, 2.8rem); letter-spacing: 0.06em; color: var(--white); line-height: 1; margin-bottom: 14px; }
+    .section-desc { font-family: 'DM Sans', sans-serif; font-size: 0.92rem; font-weight: 300; line-height: 1.8; color: rgba(245,240,232,0.65); max-width: 620px; }
+    .placeholder-text { font-family: 'Cormorant Garamond', serif; font-style: italic; color: rgba(232,25,44,0.4); font-size: 1rem; }
+
+    .dp-quip { border-left: 2px solid var(--red); background: rgba(232,25,44,0.04); padding: 16px 20px; margin-bottom: 32px; display: flex; gap: 14px; align-items: flex-start; }
+    .dp-quip-icon { flex-shrink: 0; margin-top: 2px; }
+    .dp-quip-text { font-family: 'DM Sans', sans-serif; font-size: 0.85rem; line-height: 1.65; color: rgba(245,240,232,0.72); font-style: italic; }
+    .dp-quip-text strong { color: var(--red); font-style: normal; font-weight: 500; }
+
+    /* ══ VIDEO CARDS ══ */
+    .cards-grid { display: grid; gap: 16px; }
+    .cards-grid.col-2 { grid-template-columns: repeat(2, 1fr); }
+    .cards-grid.col-3 { grid-template-columns: repeat(3, 1fr); }
+    .cards-grid.col-4 { grid-template-columns: repeat(4, 1fr); }
+    .cards-grid.col-auto { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+    .video-card {
+      background: var(--surface); border: 1px solid #161616;
+      text-decoration: none; display: flex; flex-direction: column;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .video-card:hover { border-color: rgba(232,25,44,0.35); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(232,25,44,0.1); }
+    .video-thumb { width: 100%; aspect-ratio: 16/9; overflow: hidden; position: relative; background: #111; }
+    .video-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s, opacity 0.3s; opacity: 0.75; }
+    .video-card:hover .video-thumb img { transform: scale(1.04); opacity: 0.9; }
+    .play-icon { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .play-icon svg { width: 40px; height: 40px; opacity: 0.7; transition: opacity 0.25s, transform 0.25s; }
+    .video-card:hover .play-icon svg { opacity: 1; transform: scale(1.1); }
+    .video-info { padding: 16px 18px 18px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .video-label { font-family: 'DM Mono', monospace; font-size: 0.52rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--red); opacity: 0.8; }
+    .video-title { font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; color: rgba(245,240,232,0.88); line-height: 1.4; }
+    .video-meta { font-family: 'DM Mono', monospace; font-size: 0.52rem; letter-spacing: 0.12em; color: var(--muted); margin-top: auto; padding-top: 10px; border-top: 1px solid #161616; display: flex; align-items: center; gap: 8px; }
+    .video-meta svg { flex-shrink: 0; }
+
+    /* Note card */
+    .note-card { background: rgba(201,165,90,0.04); border: 1px solid rgba(201,165,90,0.18); padding: 24px 28px; display: flex; gap: 18px; align-items: flex-start; }
+    .note-icon { color: var(--gold); flex-shrink: 0; margin-top: 2px; }
+    .note-text { font-family: 'DM Sans', sans-serif; font-size: 0.88rem; line-height: 1.7; color: rgba(245,240,232,0.7); }
+    .note-text strong { color: var(--gold); font-weight: 500; }
+
+    /* Mentorship cards (larger) */
+    .mentorship-card {
+      background: var(--surface); border: 1px solid #161616;
+      text-decoration: none; display: grid; grid-template-columns: 300px 1fr;
+      transition: border-color 0.25s, box-shadow 0.25s;
+      overflow: hidden; min-height: 180px;
+    }
+    .mentorship-card:hover { border-color: rgba(232,25,44,0.35); box-shadow: 0 8px 40px rgba(232,25,44,0.1); }
+    .mentorship-thumb { position: relative; overflow: hidden; background: #111; }
+    .mentorship-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.65; transition: opacity 0.3s, transform 0.4s; }
+    .mentorship-card:hover .mentorship-thumb img { opacity: 0.85; transform: scale(1.03); }
+    .mentorship-thumb .play-icon svg { width: 48px; height: 48px; }
+    .mentorship-body { padding: 28px 32px; display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+    .mentorship-year { font-family: 'Bebas Neue', sans-serif; font-size: 0.8rem; letter-spacing: 0.35em; color: var(--red); }
+    .mentorship-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 0.06em; color: var(--white); line-height: 1; }
+    .mentorship-desc { font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 300; line-height: 1.65; color: rgba(245,240,232,0.62); }
+    .mentorship-cta { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--red); display: flex; align-items: center; gap: 8px; margin-top: 6px; opacity: 0.8; transition: opacity 0.2s; }
+    .mentorship-cta svg { transition: transform 0.2s; }
+    .mentorship-card:hover .mentorship-cta { opacity: 1; }
+    .mentorship-card:hover .mentorship-cta svg { transform: translateX(4px); }
+
+    /* Coming soon placeholder */
+    .coming-placeholder { border: 1px dashed #1e1e1e; padding: 56px 40px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .coming-placeholder .cp-tag { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--red); border: 1px solid rgba(232,25,44,0.3); border-radius: 100px; padding: 8px 20px; }
+    .coming-placeholder .cp-text { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.1rem; color: rgba(245,240,232,0.35); }
+
+    /* FOOTER */
+    .footer { width: 100%; border-top: 1px solid var(--border); padding: 28px 64px; display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+    .footer-left { font-family: 'DM Mono', monospace; font-size: 0.56rem; letter-spacing: 0.22em; color: var(--muted); text-transform: uppercase; }
+    .footer-right { font-family: 'Cormorant Garamond', serif; font-size: 0.88rem; font-style: italic; color: var(--muted); }
+    .footer-right span { color: var(--gold); }
+
+    /* CURSOR */
+    .cursor-dot  { width: 8px; height: 8px; border-radius: 50%; background: var(--red); position: fixed; pointer-events: none; z-index: 10000; transform: translate(-50%,-50%); box-shadow: 0 0 8px rgba(232,25,44,0.8); transition: transform 0.1s; }
+    .cursor-ring { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(232,25,44,0.45); position: fixed; pointer-events: none; z-index: 10000; transform: translate(-50%,-50%); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp   { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes dp-pulse { 0%,100% { filter: drop-shadow(0 0 8px rgba(232,25,44,0.3)); } 50% { filter: drop-shadow(0 0 22px rgba(232,25,44,0.75)); } }
+    @keyframes fadeDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+    .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 900px) {
+      .mentorship-card { grid-template-columns: 1fr; }
+      .mentorship-thumb { aspect-ratio: 16/9; }
+      .cards-grid.col-3, .cards-grid.col-4 { grid-template-columns: repeat(2, 1fr); }
+      .cards-grid.col-2 { grid-template-columns: 1fr; }
+      .library-body { padding: 0 20px 80px; }
+      .roadmap-wrap { padding: 40px 20px 48px; }
+      .footer { flex-direction: column; gap: 10px; text-align: center; padding: 24px 28px; }
+    }
+    @media (max-width: 600px) {
+      .cards-grid.col-3, .cards-grid.col-4 { grid-template-columns: 1fr; }
+      .section-head { flex-direction: column; gap: 12px; }
+      .section-number { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cursor-dot" id="dot"></div>
+  <div class="cursor-ring" id="ring"></div>
+  <div class="bg-scene"></div>
+
+  <div class="wrapper">
+
+    <!-- NAVBAR -->
+    <nav class="navbar" id="navbar">
+      <a href="/" class="nav-logo">IPDA <span>University</span></a>
+      <ul class="nav-links">
+        <li><a href="/propfirms.html">Prop Firms</a></li>
+        <li><a href="/indicators.html">Indicators</a></li>
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/ict-library.html" class="active">ICT Library</a></li>
+        <li><a href="/journal.html">Journal</a></li>
+      </ul>
+      <div class="nav-right">
+        <a href="/mentorship.html" class="nav-cta">Join Now</a>
+        <button class="nav-hamburger" id="hamburger" aria-label="Menu" onclick="toggleMenu()">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- MOBILE MENU -->
+    <div class="nav-mobile" id="mobile-menu">
+      <a href="/propfirms.html" onclick="toggleMenu()">Prop Firms</a>
+      <a href="/indicators.html" onclick="toggleMenu()">Indicators</a>
+      <a href="/about.html" onclick="toggleMenu()">About</a>
+      <a href="/ict-library.html" onclick="toggleMenu()" class="active">ICT Library</a>
+      <a href="/journal.html" onclick="toggleMenu()">Journal</a>
+    </div>
+
+    <!-- TICKER -->
+    <div class="ticker-wrap">
+      <div class="ticker">
+        <span class="hl-red">ICT Library</span><span>·</span>
+        <span>Inner Circle Trader</span><span>·</span>
+        <span class="hl-gold">Smart Money Concepts</span><span>·</span>
+        <span>IPDA Methodology</span><span>·</span>
+        <span class="hl-red">Market Maker Series</span><span>·</span>
+        <span>2022 Mentorship</span><span>·</span>
+        <span class="hl-gold">2023 Mentorship</span><span>·</span>
+        <span>Order Blocks · FVG · Liquidity</span><span>·</span>
+        <span class="hl-red">ICT Library</span><span>·</span>
+        <span>Inner Circle Trader</span><span>·</span>
+        <span class="hl-gold">Smart Money Concepts</span><span>·</span>
+        <span>IPDA Methodology</span><span>·</span>
+        <span class="hl-red">Market Maker Series</span><span>·</span>
+        <span>2022 Mentorship</span><span>·</span>
+        <span class="hl-gold">2023 Mentorship</span><span>·</span>
+        <span>Order Blocks · FVG · Liquidity</span><span>·</span>
+      </div>
+    </div>
+
+    <!-- PAGE HERO -->
+    <div class="page-hero">
+      <div class="page-eyebrow">Curated by Corleone</div>
+      <h1 class="page-title">ICT <span>Library</span></h1>
+      <p class="page-desc">Every serious resource from Michael J. Huddleston — ordered, contextualised, and ready to study. This is the path from zero to Smart Money trader.</p>
+      <div style="margin: 36px auto 0; width: 72px; height: 72px; opacity: 0; animation: fadeIn 1.2s ease forwards 1s;">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;filter:drop-shadow(0 0 14px rgba(232,25,44,0.4));animation:dp-pulse 3s ease-in-out infinite;">
+          <ellipse cx="50" cy="52" rx="38" ry="42" fill="#e8192c"/>
+          <path d="M50 10 C30 10 14 25 12 45 L20 42 C22 30 34 20 50 20 C66 20 78 30 80 42 L88 45 C86 25 70 10 50 10Z" fill="#111"/>
+          <path d="M12 45 C10 55 12 65 18 73 L24 66 C20 60 18 52 20 42Z" fill="#111"/>
+          <path d="M88 45 C90 55 88 65 82 73 L76 66 C80 60 82 52 80 42Z" fill="#111"/>
+          <path d="M18 73 C24 83 36 92 50 94 C64 92 76 83 82 73 L76 66 C72 76 62 84 50 86 C38 84 28 76 24 66Z" fill="#111"/>
+          <rect x="47" y="10" width="6" height="84" rx="3" fill="#111" opacity="0.5"/>
+          <ellipse cx="33" cy="48" rx="13" ry="11" fill="white"/>
+          <ellipse cx="67" cy="48" rx="13" ry="11" fill="white"/>
+          <ellipse cx="33" cy="48" rx="13" ry="11" fill="none" stroke="#111" stroke-width="2"/>
+          <ellipse cx="67" cy="48" rx="13" ry="11" fill="none" stroke="#111" stroke-width="2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ROADMAP -->
+    <div class="roadmap-wrap">
+      <div class="roadmap">
+        <a href="#introduction" class="roadmap-step">
+          <div class="roadmap-node">01</div>
+          <div class="roadmap-label">Introduction</div>
+        </a>
+        <div class="roadmap-connector"></div>
+        <a href="#language" class="roadmap-step">
+          <div class="roadmap-node">02</div>
+          <div class="roadmap-label">Language</div>
+        </a>
+        <div class="roadmap-connector"></div>
+        <a href="#mentorship" class="roadmap-step">
+          <div class="roadmap-node">03</div>
+          <div class="roadmap-label">Mentorship Series</div>
+        </a>
+        <div class="roadmap-connector"></div>
+        <a href="#supplementary" class="roadmap-step">
+          <div class="roadmap-node">04</div>
+          <div class="roadmap-label">Supplementary</div>
+        </a>
+        <div class="roadmap-connector"></div>
+        <a href="#psychology" class="roadmap-step">
+          <div class="roadmap-node">05</div>
+          <div class="roadmap-label">Psychology</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- LIBRARY BODY -->
+    <div class="library-body">
+
+      <!-- ══ 01 INTRODUCTION ══ -->
+      <div class="section-block fade-up" id="introduction">
+        <div class="section-head">
+          <div class="section-number">01</div>
+          <div class="section-info">
+            <div class="section-tag">Start Here</div>
+            <div class="section-title">Introduction</div>
+            <p class="section-desc placeholder-text">[ Your context here — why these 3 series as the entry point, what the student should expect and take away before moving forward. ]</p>
+          </div>
+        </div>
+
+        <div class="dp-quip">
+          <div class="dp-quip-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="8" rx="7" ry="7" stroke="#e8192c" stroke-width="1"/><ellipse cx="5.5" cy="6.5" rx="2" ry="1.5" fill="#e8192c"/><ellipse cx="10.5" cy="6.5" rx="2" ry="1.5" fill="#e8192c"/><path d="M5 10.5 Q8 13 11 10.5" stroke="#e8192c" stroke-width="1" fill="none"/></svg></div>
+          <p class="dp-quip-text">"You're not skipping this. I've seen what happens to people who skip the introduction. Just watch the series." <strong>— DP</strong></p>
+        </div>
+
+        <div class="cards-grid col-2">
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=Vh0NtdPPj1M&list=PLVgHx4Z63paZ0R9gMaq0y2fM_2vyNJadp" target="_blank" rel="noopener">
+            <div class="video-thumb">
+              <img src="https://img.youtube.com/vi/Vh0NtdPPj1M/maxresdefault.jpg" alt="ICT Market Maker Forex Series" loading="lazy">
+              <div class="play-icon">
+                <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/>
+                  <path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/>
+                </svg>
+              </div>
+            </div>
+            <div class="video-info">
+              <div class="video-label">Playlist · Series 1</div>
+              <div class="video-title">ICT Market Maker Forex Series</div>
+              <div class="video-meta">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>
+                YouTube Playlist
+              </div>
+            </div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=7WM8qdkanIY&list=PLVgHx4Z63paah1dHyad1OMJQJdm6iP2Yn" target="_blank" rel="noopener">
+            <div class="video-thumb">
+              <img src="https://img.youtube.com/vi/7WM8qdkanIY/maxresdefault.jpg" alt="ICT Forex Market Maker Primer Course" loading="lazy">
+              <div class="play-icon">
+                <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/>
+                  <path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/>
+                </svg>
+              </div>
+            </div>
+            <div class="video-info">
+              <div class="video-label">Playlist · Series 2</div>
+              <div class="video-title">ICT Forex — Market Maker Primer Course</div>
+              <div class="video-meta">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>
+                YouTube Playlist
+              </div>
+            </div>
+          </a>
+
+        </div>
+
+        <div class="note-card">
+          <div class="note-icon">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M9 8v5M9 6h.01" stroke="rgba(232,25,44,0.8)" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <p class="note-text">
+            <strong>ICT Original Market Maker Series</strong> — This series holds significant educational value and is considered a foundational work. However, out of respect for the author, we do not share unofficial links. You can find it through legitimate community archives. If you come across it, it is worth your time.
+          </p>
+        </div>
+      </div>
+
+      <!-- ══ 02 LANGUAGE ══ -->
+      <div class="section-block fade-up" id="language">
+        <div class="section-head">
+          <div class="section-number">02</div>
+          <div class="section-info">
+            <div class="section-tag">2016 Core Content</div>
+            <div class="section-title">Language</div>
+            <p class="section-desc placeholder-text">[ Your context here — why mastering ICT's vocabulary before anything else, what this 12-month series teaches, and how to approach it. ]</p>
+          </div>
+        </div>
+
+        <div class="dp-quip">
+          <div class="dp-quip-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="8" rx="7" ry="7" stroke="#e8192c" stroke-width="1"/><ellipse cx="5.5" cy="6.5" rx="2" ry="1.5" fill="#e8192c"/><ellipse cx="10.5" cy="6.5" rx="2" ry="1.5" fill="#e8192c"/><path d="M5 10.5 Q8 13 11 10.5" stroke="#e8192c" stroke-width="1" fill="none"/></svg></div>
+          <p class="dp-quip-text">"12 months. Yes, twelve. No, you can't skip to Month 7 because it 'sounds interesting'. I tried that once. Still recovering." <strong>— DP</strong></p>
+        </div>
+
+        <div class="cards-grid col-4">
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=0LhteuLVuDU&list=PLVgHx4Z63paYzh3KwUFX0UHQUf31CAEXk" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/0LhteuLVuDU/maxresdefault.jpg" alt="Month 1" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 1</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=mjVHmE1gVMg&list=PLVgHx4Z63paZvjqerfbn320myZ06L1MOB" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/mjVHmE1gVMg/maxresdefault.jpg" alt="Month 2" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 2</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=UF5J0nEBc0E&list=PLVgHx4Z63paaY69GotBJyZ7KN_U09ra2o" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/UF5J0nEBc0E/maxresdefault.jpg" alt="Month 3" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 3</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=6oQVb0zVxMM&list=PLVgHx4Z63pabb9rl1nyG58TG8PG8yzuao" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/6oQVb0zVxMM/maxresdefault.jpg" alt="Month 4" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 4</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=n7SPAK_tpN8&list=PLVgHx4Z63paYBN404Q2QZ7D4mOJz1IHAk" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/n7SPAK_tpN8/maxresdefault.jpg" alt="Month 5" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 5</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=0juYnbKays0&list=PLVgHx4Z63paaG-26YEf2svQ_EsdGXjws1" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/0juYnbKays0/maxresdefault.jpg" alt="Month 6" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 6</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=mQA8jCem9d0&list=PLVgHx4Z63paYWV_3PDkYajv_oNznvK2aR" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/mQA8jCem9d0/maxresdefault.jpg" alt="Month 7" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 7</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=-cXnnHjy9s0&list=PLVgHx4Z63paZrCT5EaUhJ6sCVNaegCf_c" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/-cXnnHjy9s0/maxresdefault.jpg" alt="Month 8" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 8</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=_TNhWRPa6GA&list=PLVgHx4Z63paZfDRSk94aEMoYKUBqQgj0b" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/_TNhWRPa6GA/maxresdefault.jpg" alt="Month 9" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 9</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=9H4iaaQXV5Y&list=PLVgHx4Z63paZdnxymLp2Ihj-Pc_-foVVV" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/9H4iaaQXV5Y/maxresdefault.jpg" alt="Month 10" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 10</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=u5S6Zt1ZIpA&list=PLVgHx4Z63paa4FfJ8zI_QpdJICSLkXTQO" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/u5S6Zt1ZIpA/maxresdefault.jpg" alt="Month 11" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 11</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+          <a class="video-card" href="https://www.youtube.com/watch?v=eIdnsgq-G7A&list=PLVgHx4Z63paaQ-8s2wrhfi6N2O_lTPuAI" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/eIdnsgq-G7A/maxresdefault.jpg" alt="Month 12" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">2016 Mentorship</div><div class="video-title">Core Content Month 12</div><div class="video-meta"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 9A4 4 0 105 1a4 4 0 000 8z" stroke="rgba(232,25,44,0.5)" stroke-width="1"/><path d="M5 3v2l1.5 1.5" stroke="rgba(232,25,44,0.5)" stroke-width="1" stroke-linecap="round"/></svg>YouTube Playlist</div></div>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- ══ 03 MENTORSHIP SERIES ══ -->
+      <div class="section-block fade-up" id="mentorship">
+        <div class="section-head">
+          <div class="section-number">03</div>
+          <div class="section-info">
+            <div class="section-tag">The Core Path</div>
+            <div class="section-title">Mentorship Series</div>
+            <p class="section-desc placeholder-text">[ Your context here — why this order matters, what each year adds to the previous, and what to look for as you move through 2022 → 2023 → 2024 → 2025. ]</p>
+          </div>
+        </div>
+
+        <div class="dp-quip">
+          <div class="dp-quip-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="8" rx="7" ry="7" stroke="#e8192c" stroke-width="1"/><ellipse cx="5.5" cy="6.5" rx="2" ry="1.5" fill="#e8192c"/><ellipse cx="10.5" cy="6.5" rx="2" ry="1.5" fill="#e8192c"/><path d="M5 10.5 Q8 13 11 10.5" stroke="#e8192c" stroke-width="1" fill="none"/></svg></div>
+          <p class="dp-quip-text">"2022 → 2023 → 2024 → 2025. In that order. The 2023 is the good stuff. Like, <strong>really</strong> good stuff. Don't tell anyone I said that." <strong>— DP</strong></p>
+        </div>
+
+        <div class="cards-grid col-2" style="gap:20px">
+
+          <a class="mentorship-card" href="https://www.youtube.com/watch?v=kt6V4ai60fI&list=PLVgHx4Z63paYiFGQ56PjTF1PGePL3r69s" target="_blank" rel="noopener">
+            <div class="mentorship-thumb">
+              <img src="https://img.youtube.com/vi/kt6V4ai60fI/maxresdefault.jpg" alt="2022 Mentorship" loading="lazy">
+              <div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div>
+            </div>
+            <div class="mentorship-body">
+              <div class="mentorship-year">Step 01</div>
+              <div class="mentorship-title">2022 Mentorship</div>
+              <p class="mentorship-desc placeholder-text">[ Your context — what this year introduces, the foundation it builds, and who it's for. ]</p>
+              <div class="mentorship-cta">Watch Playlist <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="rgba(232,25,44,0.8)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+          </a>
+
+          <a class="mentorship-card" href="https://www.youtube.com/watch?v=XN8tuO4QIRw&list=PLVgHx4Z63pabpjlduWBaEsn8VMtALhjGV" target="_blank" rel="noopener">
+            <div class="mentorship-thumb">
+              <img src="https://img.youtube.com/vi/XN8tuO4QIRw/maxresdefault.jpg" alt="2023 Mentorship" loading="lazy">
+              <div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div>
+            </div>
+            <div class="mentorship-body">
+              <div style="display:inline-flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:0.5rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--red);border:1px solid rgba(232,25,44,0.35);border-radius:100px;padding:4px 10px;margin-bottom:6px;background:rgba(232,25,44,0.06);">★ The Masterpiece</div>
+              <div class="mentorship-year">Step 02</div>
+              <div class="mentorship-title">2023 Mentorship</div>
+              <p class="mentorship-desc placeholder-text">[ Your context — why 2023 is the pinnacle of ICT's public work and what makes it different from everything before. ]</p>
+              <div class="mentorship-cta">Watch Playlist <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="rgba(232,25,44,0.8)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+          </a>
+
+          <a class="mentorship-card" href="https://www.youtube.com/watch?v=GKeLVR3dPuI&list=PLVgHx4Z63paaM41aubnHOmqfeNjSAoBCV" target="_blank" rel="noopener">
+            <div class="mentorship-thumb">
+              <img src="https://img.youtube.com/vi/GKeLVR3dPuI/maxresdefault.jpg" alt="2024 Mentorship" loading="lazy">
+              <div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div>
+            </div>
+            <div class="mentorship-body">
+              <div class="mentorship-year">Step 03</div>
+              <div class="mentorship-title">2024 Mentorship</div>
+              <p class="mentorship-desc placeholder-text">[ Your context — what 2024 consolidates, what it adds, and how to use it alongside 2023. ]</p>
+              <div class="mentorship-cta">Watch Playlist <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="rgba(232,25,44,0.8)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+          </a>
+
+          <a class="mentorship-card" href="https://www.youtube.com/watch?v=yQM1Ut9V7mk&list=PLVgHx4Z63paYf6xk2a8KKuf2CYJ8SX0Wy" target="_blank" rel="noopener">
+            <div class="mentorship-thumb">
+              <img src="https://img.youtube.com/vi/yQM1Ut9V7mk/maxresdefault.jpg" alt="2025 Mentorship" loading="lazy">
+              <div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div>
+            </div>
+            <div class="mentorship-body">
+              <div class="mentorship-year">Step 04 · Ongoing</div>
+              <div class="mentorship-title">2025 Mentorship</div>
+              <p class="mentorship-desc placeholder-text">[ Your context — what 2025 is adding to the body of work, updated as the year progresses. ]</p>
+              <div class="mentorship-cta">Watch Playlist <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="rgba(232,25,44,0.8)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            </div>
+          </a>
+
+        </div>
+      </div>
+
+      <!-- ══ 04 SUPPLEMENTARY ══ -->
+      <div class="section-block fade-up" id="supplementary">
+        <div class="section-head">
+          <div class="section-number">04</div>
+          <div class="section-info">
+            <div class="section-tag">Additional Resources</div>
+            <div class="section-title">Supplementary</div>
+            <p class="section-desc placeholder-text">[ Your context — what kind of content lives here and when to come back for it. ]</p>
+          </div>
+        </div>
+        <div class="coming-placeholder">
+          <div class="cp-tag">Being Curated</div>
+          <p class="cp-text">&ldquo;Good things take time. I would know &mdash; regeneration is not instant.&rdquo; &mdash; DP</p>
+        </div>
+      </div>
+
+      <!-- 05 PSYCHOLOGY -->
+      <div class="section-block fade-up" id="psychology">
+        <div class="section-head">
+          <div class="section-number">05</div>
+          <div class="section-info">
+            <div class="section-tag">Mindset &amp; Discipline</div>
+            <div class="section-title">Psychology</div>
+            <p class="section-desc placeholder-text">[ Your context here. ]</p>
+          </div>
+        </div>
+        <div class="dp-quip">
+          <p class="dp-quip-text">&ldquo;The mental game. The hardest part.&rdquo; <strong>&mdash; DP</strong></p>
+        </div>
+        <div class="cards-grid col-2">
+          <a class="video-card" href="https://www.youtube.com/watch?v=ASxSiOi6nJI&amp;list=PLVgHx4Z63pabcsTrvY5XsVdsvTN2ho6pz&amp;index=1" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/ASxSiOi6nJI/hqdefault.jpg" alt="Ends Series 2022" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">Psychology &middot; Playlist</div><div class="video-title">Ends Series 2022</div><div class="video-meta">YouTube Playlist</div></div>
+          </a>
+          <a class="video-card" href="https://www.youtube.com/playlist?list=PLrlNxdU85imVq0g0_F6l2S1gz6-cHfvyN" target="_blank" rel="noopener">
+            <div class="video-thumb"><img src="https://img.youtube.com/vi/ASxSiOi6nJI/hqdefault.jpg" alt="If I Could Go Back In Time" loading="lazy"><div class="play-icon"><svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="23" stroke="rgba(232,25,44,0.6)" stroke-width="1"/><path d="M19 16l14 8-14 8V16z" fill="rgba(232,25,44,0.9)"/></svg></div></div>
+            <div class="video-info"><div class="video-label">Psychology &middot; Playlist</div><div class="video-title">ICT &mdash; If I Could Go Back In Time</div><div class="video-meta">YouTube Playlist</div></div>
+          </a>
+        </div>
+      </div>
+    </div><!-- /library-body -->
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <span class="footer-left">© 2025 IPDA University · All rights reserved</span>
+      <span class="footer-right">Built by <span>@Corleone_Trades</span> · Not financial advice</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.5rem;letter-spacing:0.12em;color:rgba(232,25,44,0.4);">Maximum Effort ✦</span>
+    </footer>
+
+  </div>
+
+  <script>
+    // Navbar scroll
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => navbar.classList.toggle('scrolled', window.scrollY > 60));
+
+    // Mobile menu
+    function toggleMenu() {
+      document.getElementById('mobile-menu').classList.toggle('open');
+      document.getElementById('hamburger').classList.toggle('open');
+    }
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        document.getElementById('mobile-menu').classList.remove('open');
+        document.getElementById('hamburger').classList.remove('open');
+      }
+    });
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.06 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // Cursor
+    const dot = document.getElementById('dot'), ring = document.getElementById('ring');
+    let mx=0,my=0,rx=0,ry=0;
+    document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; dot.style.left=mx+'px'; dot.style.top=my+'px'; });
+    (function animateRing(){ rx+=(mx-rx)*0.12; ry+=(my-ry)*0.12; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(animateRing); })();
+    document.querySelectorAll('a,button').forEach(el => {
+      el.addEventListener('mouseenter', () => { ring.style.width='44px'; ring.style.height='44px'; ring.style.borderColor='rgba(232,25,44,0.7)'; dot.style.transform='translate(-50%,-50%) scale(1.5)'; });
+      el.addEventListener('mouseleave', () => { ring.style.width='28px'; ring.style.height='28px'; ring.style.borderColor='rgba(232,25,44,0.45)'; dot.style.transform='translate(-50%,-50%) scale(1)'; });
+    });
+  </script>
+</body>
+</html>
